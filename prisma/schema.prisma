@@ -6,6 +6,62 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+// Model é o equivalente a tabela do banco de dados
+// @id indica que o tipo é único e primary-key
+//uuid - universal unique id
+model User {
+  id        String   @id @default(uuid())
+  githubId  Int      @unique
+  login     String
+  avatarUrl String
+  Evento    Evento[]
+
+  @@map(name: "users")
+}
+
+model Evento {
+  id              String   @id @default(uuid())
+  nomeEvento      String
+  dataEvento      DateTime
+  horarioEvento   String
+  linkIngresso    String
+  descricaoEvento String
+
+  usuario        User   @relation(fields: [userCadastroId], references: [id])
+  userCadastroId String
+
+  local   Local  @relation(fields: [localId], references: [id])
+  localId String
+
+  categoria   Categoria @relation(fields: [categoriaId], references: [id])
+  categoriaId String
+
+  @@map(name: "eventos")
+}
+
+model Local {
+  id          String   @id @default(uuid())
+  cep         String
+  logradouro  String
+  complemento String?
+  numero      String
+  bairro      String
+  localidade  String
+  uf          String
+  Evento      Evento[]
+
+  @@map(name: "local")
+}
+
+model Categoria {
+  id            String   @id @default(uuid())
+  nomeCategoria String
+  Evento        Evento[]
+
+  @@map(name: "categoria")
 }
